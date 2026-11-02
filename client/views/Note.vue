@@ -123,8 +123,8 @@ import { mdiNoteOffOutline } from "@mdi/js";
 import { mdilContentSave, mdilDelete } from "@mdi/light-js";
 import Mousetrap from "mousetrap";
 import { useToast } from "primevue/usetoast";
-import { computed, nextTick, onMounted, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from "vue";
+import { useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from "vue-router";
 
 import {
   apiErrorHandler,
@@ -168,8 +168,12 @@ const newTitle = ref();
 const toast = useToast();
 const toastEditor = ref();
 const unsavedChanges = ref(false);
+let requestGeneration = 0;
+let active = true;
 
 function init() {
+  const request = ++requestGeneration;
+  clearContentChangedTimeout();
   // Return if we already have the note e.g. When we rename a note, the route prop would change but we’d already have the note.
   if (props.title && props.title == note.value.title) {
     return;
@@ -179,10 +183,12 @@ function init() {
   if (props.title) {
     getNote(props.title)
       .then((data) => {
+        if (!active || request !== requestGeneration) return;
         note.value = data;
         loadingIndicator.value.setLoaded();
       })
       .catch((error) => {
+        if (!active || request !== requestGeneration) return;
         if (error.response?.status === 404) {
           loadingIndicator.value.setFailed("Note not found", mdiNoteOffOutline);
         } else {
@@ -239,14 +245,15 @@ function deleteHandler() {
 }
 
 function deleteConfirmedHandler() {
-  deleteNote(note.value.title)
+  const request = requestGeneration;
+  const target = note.value.title;
+  deleteNote(target)
     .then(() => {
+      if (!active || request !== requestGeneration) return;
       toast.add(getToastOptions("Note deleted ✓", "Success", "success"));
       router.push({ name: "home" });
     })
-    .catch((error) => {
-      apiErrorHandler(error, toast);
-    });
+    .catch(error => { if (active && request === requestGeneration) apiErrorHandler(error, toast); });
 }
 
 // Note Saving
@@ -278,39 +285,31 @@ function saveHandler(close = false) {
 }
 
 function saveNew(newTitle, newContent, close = false) {
-  createNote(newTitle, newContent)
-    .then((data) => {
-      clearDraft();
-      note.value = data;
-      router
-        .push({
-          name: "note",
-          params: { title: note.value.title },
-        })
-        .then(() => {
-          // Wait for the route to be updated before setting edit mode to false
-          // as the route is used to determine the action.
-          noteSaveSuccess(close);
-        });
-    })
-    .catch(noteSaveFailure);
+  const request = requestGeneration;
+  createNote(newTitle, newContent).then(data => {
+    if (!active || request !== requestGeneration) return;
+    clearDraft();
+    note.value = data;
+    router.push({ name: 'note', params: { title: data.title } }).then(() => {
+      if (active && note.value.title === data.title && router.currentRoute.value.params.title === data.title) noteSaveSuccess(close);
+    });
+  }).catch(error => { if (active && request === requestGeneration) noteSaveFailure(error); });
 }
 
 function saveExisting(newTitle, newContent, close = false) {
-  // Return if no changes
-  if (newTitle == note.value.title && newContent == note.value.content) {
+  const request = requestGeneration;
+  const target = note.value.title;
+  if (newTitle === target && newContent === note.value.content) {
     noteSaveSuccess(close);
     return;
   }
-
-  updateNote(note.value.title, newTitle, newContent)
-    .then((data) => {
-      clearDraft();
-      note.value = data;
-      router.replace({ name: "note", params: { title: note.value.title } });
-      noteSaveSuccess(close);
-    })
-    .catch(noteSaveFailure);
+  updateNote(target, newTitle, newContent).then(data => {
+    if (!active || request !== requestGeneration) return;
+    clearDraft();
+    note.value = data;
+    router.replace({ name: 'note', params: { title: data.title } });
+    noteSaveSuccess(close);
+  }).catch(error => { if (active && request === requestGeneration) noteSaveFailure(error); });
 }
 
 function noteSaveFailure(error) {
@@ -330,6 +329,8 @@ function noteSaveFailure(error) {
 }
 
 function noteSaveSuccess(close = false) {
+  if (!active) return;
+  window.dispatchEvent(new CustomEvent('flatnotes:note-saved', { detail: note.value.title }));
   unsavedChanges.value = false;
   if (close) {
     closeNote();
@@ -374,6 +375,7 @@ function addImageBlobHook(file, callback) {
 }
 
 function postAttachment(file) {
+  const request = requestGeneration;
   // Invalid Character Validation
   if (reservedFilenameCharacters.test(file.name)) {
     badFilenameToast("Title");
@@ -386,6 +388,7 @@ function postAttachment(file) {
   // Upload the attachment
   return createAttachment(file)
     .then((data) => {
+      if (!active || request !== requestGeneration) return;
       // Success Toast
       toast.add(
         getToastOptions(
@@ -397,6 +400,7 @@ function postAttachment(file) {
       return data;
     })
     .catch((error) => {
+      if (!active || request !== requestGeneration) return;
       if (error.response?.status === 409) {
         // Note: The current implementation will append a datetime to the filename if it already exists.
         // Error Toast
@@ -428,6 +432,7 @@ function clearContentChangedTimeout() {
 }
 
 function contentChangedHandler() {
+  if (!active || !editMode.value || !toastEditor.value) return;
   if (isContentChanged()) {
     unsavedChanges.value = true;
     setBeforeUnloadConfirmation(true);
@@ -534,5 +539,37 @@ function isContentChanged() {
 }
 
 watch(() => props.title, init);
+function sessionEnded() {
+  active = false;
+  requestGeneration++;
+  clearContentChangedTimeout();
+  editMode.value = false;
+  note.value = {};
+  newTitle.value = '';
+  unsavedChanges.value = false;
+  setBeforeUnloadConfirmation(false);
+}
+function mayNavigate(to) {
+  if (to.name === 'login') return true;
+  if (editMode.value && toastEditor.value && isContentChanged()) {
+    if (!window.confirm('Leave this note without saving your changes?')) return false;
+    clearDraft();
+  }
+  clearContentChangedTimeout();
+  editMode.value = false;
+  setBeforeUnloadConfirmation(false);
+  return true;
+}
+onBeforeRouteLeave(mayNavigate);
+onBeforeRouteUpdate(mayNavigate);
+window.addEventListener('flatnotes:session-ended', sessionEnded);
+onBeforeUnmount(() => {
+  active = false;
+  requestGeneration++;
+  clearContentChangedTimeout();
+  setBeforeUnloadConfirmation(false);
+  window.removeEventListener('flatnotes:session-ended', sessionEnded);
+  Mousetrap.unbind('e');
+});
 onMounted(init);
 </script>

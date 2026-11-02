@@ -12,7 +12,10 @@
       :hide-logo="!showNavBarLogo"
       @toggleSearchModal="toggleSearchModal"
     />
-    <RouterView />
+    <div class="notebook-layout">
+      <ContentsSidebar v-if="route.name && route.name !== 'login'" />
+      <main class="notebook-main"><RouterView /></main>
+    </div>
   </LoadingIndicator>
 </template>
 
@@ -31,6 +34,8 @@ import NavBar from "./partials/NavBar.vue";
 import SearchModal from "./partials/SearchModal.vue";
 import LoadingIndicator from "./components/LoadingIndicator.vue";
 import router from "./router.js";
+import ContentsSidebar from './extensions/notebook/ContentsSidebar.vue';
+import './extensions/notebook/notebook.css';
 
 const globalStore = useGlobalStore();
 const isSearchModalVisible = ref(false);

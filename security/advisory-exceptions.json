@@ -1,0 +1,21 @@
+{
+  "reviewed": "2026-11-02",
+  "expires": "2027-01-31",
+  "owner": "repository maintainer",
+  "exceptions": [
+    {
+      "package": "ecdsa",
+      "version": "0.19.2",
+      "identifiers": ["CVE-2024-23342", "GHSA-wj6h-64fc-37mp", "PYSEC-2026-1325"],
+      "reason": "No EC signing, key generation or ECDH is used. Authentication exclusively uses HS256.",
+      "reference": "https://github.com/advisories/GHSA-wj6h-64fc-37mp"
+    },
+    {
+      "package": "python-jose",
+      "version": "3.5.0",
+      "identifiers": ["CVE-2026-85394", "GHSA-3qf3-8w2g-rqmx", "PYSEC-2026-4298"],
+      "reason": "Only HS256 with a private, independently random symmetric secret. No public key, PEM, DER, JWK or JWKS input is accepted as verification key.",
+      "reference": "https://github.com/advisories/GHSA-3qf3-8w2g-rqmx"
+    }
+  ]
+}

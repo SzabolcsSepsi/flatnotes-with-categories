@@ -17,11 +17,15 @@ logger.setLevel(log_level)
 # Uvicorn
 class HealthEndpointFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return (
-            record.args
-            and len(record.args) >= 3
-            and record.args[2] != "/health"
-        )
+        if not record.args or len(record.args) < 3:
+            return False
+        if record.args[2] == '/health':
+            return False
+        # Titles/search terms are present in URLs. Keep only method and status.
+        args = list(record.args)
+        args[2] = '<private>'
+        record.args = tuple(args)
+        return True
 
 
 uvicorn_logger = logging.getLogger("uvicorn.access")

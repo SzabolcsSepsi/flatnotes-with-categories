@@ -27,12 +27,13 @@ flatnotes_command="python -m \
                   --app-dir server \
                   --host ${FLATNOTES_HOST} \
                   --port ${FLATNOTES_PORT} \
-                  --proxy-headers \
-                  --forwarded-allow-ips '*'"
+                  --proxy-headers"
 
 if [ `id -u` -eq 0 ] && [ `id -g` -eq 0 ]; then
     echo Setting file permissions...
     chown -R ${PUID}:${PGID} ${FLATNOTES_PATH}
+    # Only base-URL HTML needs runtime ownership; assets stay non-writable.
+    chown ${PUID}:${PGID} /app/client/dist/index.html
 
     echo Starting flatnotes as user ${PUID}...
     exec ${EXEC_TOOL} ${PUID}:${PGID} ${flatnotes_command}

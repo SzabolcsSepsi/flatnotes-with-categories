@@ -245,13 +245,13 @@ class FileSystemNotes(BaseNotes):
                 # Delete missing
                 if not os.path.exists(idx_filepath):
                     writer.delete_by_term("filename", idx_filename)
-                    logger.info(f"'{idx_filename}' removed from index")
+                    logger.info('Note removed from index')
                 # Update modified
                 elif (
                     datetime.fromtimestamp(os.path.getmtime(idx_filepath))
                     != idx_note["last_modified"]
                 ):
-                    logger.info(f"'{idx_filename}' updated")
+                    logger.info('Note index entry updated')
                     self._add_note_to_index(
                         writer, self._get_by_filename(idx_filename)
                     )
@@ -265,7 +265,7 @@ class FileSystemNotes(BaseNotes):
                 self._add_note_to_index(
                     writer, self._get_by_filename(filename)
                 )
-                logger.info(f"'{filename}' added to index")
+                logger.info('Note added to index')
         writer.commit(optimize=optimize)
         logger.info("Index synchronized")
 
@@ -382,13 +382,13 @@ class FileSystemNotes(BaseNotes):
 
     @staticmethod
     def _read_file(filepath: str):
-        logger.debug(f"Reading from '{filepath}'")
+        logger.debug('Reading note')
         with open(filepath, "r") as f:
             content = f.read()
         return content
 
     @staticmethod
     def _write_file(filepath: str, content: str, overwrite: bool = False):
-        logger.debug(f"Writing to '{filepath}'")
+        logger.debug('Writing note')
         with open(filepath, "w" if overwrite else "x") as f:
             f.write(content)

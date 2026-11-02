@@ -5,10 +5,11 @@
   "description": "A database-less note taking web app that utilises a flat folder of markdown files for storage.",
   "main": "client/index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test tests/notebook.test.mjs",
     "build": "vite build",
     "watch": "vite build --watch",
-    "dev": "vite"
+    "dev": "vite",
+    "test:browser": "python tests/run_browser.py"
   },
   "author": "Adam Dullage",
   "license": "MIT",
@@ -18,21 +19,27 @@
     "@mdi/light-js": "0.2.63",
     "@toast-ui/editor": "3.2.2",
     "@toast-ui/editor-plugin-code-syntax-highlight": "3.1.0",
-    "axios": "1.19.0",
+    "axios": "1.21.0",
     "mousetrap": "1.6.5",
     "pinia": "4.0.2",
     "primevue": "3.53.1",
-    "vue": "3.5.40",
+    "vue": "3.5.44",
     "vue-router": "5.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "6.0.8",
     "autoprefixer": "10.5.4",
+    "playwright": "1.64.1",
     "postcss": "8.5.25",
     "prettier": "3.9.6",
     "prettier-plugin-tailwindcss": "0.8.1",
     "sass-embedded": "1.100.0",
     "tailwindcss": "3.4.19",
-    "vite": "8.2.0"
+    "vite": "8.3.5"
+  },
+  "overrides": {
+    "dompurify": "3.4.17",
+    "glob": "14.0.3",
+    "minimatch": "11.0.4"
   }
 }

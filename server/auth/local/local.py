@@ -26,6 +26,8 @@ class LocalAuth(BaseAuth):
         self.username = get_env("FLATNOTES_USERNAME", mandatory=True).lower()
         self.password = get_env("FLATNOTES_PASSWORD", mandatory=True)
         self.secret_key = get_env("FLATNOTES_SECRET_KEY", mandatory=True)
+        if len(self.secret_key.encode('utf-8')) < 32 or '-----BEGIN' in self.secret_key:
+            raise ValueError('FLATNOTES_SECRET_KEY must be an independently random private symmetric secret of at least 32 bytes.')
         self.session_expiry_days = get_env(
             "FLATNOTES_SESSION_EXPIRY_DAYS", default=30, cast_int=True
         )
@@ -38,12 +40,12 @@ class LocalAuth(BaseAuth):
             self.totp_key = b32encode(self.totp_key.encode("utf-8"))
             self.totp = TOTP(self.totp_key)
             self.last_used_totp = None
-            self._display_totp_enrolment()
+            # Enrol deliberately offline; never emit reusable MFA seeds to logs.
 
     def login(self, data: Login) -> Token:
         # Check Username
         username_correct = secrets.compare_digest(
-            self.username.lower(), data.username.lower()
+            self.username.lower().encode('utf-8'), data.username.lower().encode('utf-8')
         )
 
         # Check Password & TOTP
@@ -52,7 +54,7 @@ class LocalAuth(BaseAuth):
             current_totp = self.totp.now()
             expected_password += current_totp
         password_correct = secrets.compare_digest(
-            expected_password, data.password
+            expected_password.encode('utf-8'), data.password.encode('utf-8')
         )
 
         # Raise error if incorrect
