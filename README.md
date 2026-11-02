@@ -22,7 +22,7 @@ clickable hierarchy, a Home note and an easy way to see dated tasks.
 | Add category | Create a category directly in the sidebar and choose its parent | Organise a growing collection through simple controls |
 | Add note | Create a note inside a category and open the existing editor immediately | Start writing in the right place |
 | Link existing note | Add an existing note to one or several categories without changing its content | Build several useful views of the same material |
-| Home note | An ordinary editable note, accessible from the sidebar | Keep an overview, links and a short to-do list together |
+| todo | Sidebar shortcut to the ordinary editable Home note | Keep an overview, links and a short to-do list together |
 | Tasks by date | A chronological view of dated checkbox entries in Home | See upcoming tasks in order while keeping the original note editable |
 | Month view | A small read-only calendar derived from those same dated entries | See which days contain tasks at a glance |
 

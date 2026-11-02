@@ -3,7 +3,7 @@
     <summary class="notebook-menu">Contents menu</summary>
     <nav aria-label="Notebook contents">
       <div class="notebook-shortcuts">
-        <RouterLink :to="{ name: 'note', params: { title: 'Home' } }"><NotebookIcon name="home" />Home note</RouterLink>
+        <RouterLink :to="{ name: 'note', params: { title: 'Home' } }"><NotebookIcon name="home" />todo</RouterLink>
         <RouterLink :to="{ name: 'home', query: { view: 'tasks' } }"><NotebookIcon name="calendar" />Tasks by date</RouterLink>
         <RouterLink :to="{ name: 'search', query: { term: '*' } }"><NotebookIcon name="search" />Search all notes</RouterLink>
       </div>
