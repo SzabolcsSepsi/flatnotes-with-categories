@@ -10,6 +10,15 @@ runtime feature libraries. The category menu and task/calendar views use the
 existing authenticated note API and plain-text Vue bindings. The Python backend,
 editor and dependency chain still require maintenance and security review.
 
+Category and note controls write only through the existing note API. They validate
+single-line labels and literal note titles, preserve unrelated Contents source,
+enforce the resulting parser limits and compare fresh source before writing.
+Contents editing and sidebar writes exclude each other in the current tab.
+These checks are not an atomic cross-tab/user lock. Creating a note and linking it
+are separate operations: failure may leave an unlisted, searchable note, which is
+never automatically deleted. Logout prevents follow-up writes and stale display;
+a request already dispatched may still complete on the server.
+
 ## Hardening included
 
 - Client errors do not log whole request/response objects.

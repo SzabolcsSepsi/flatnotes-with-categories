@@ -7,7 +7,21 @@ added for these features. Playwright is a development-only browser test runner.
 
 ## Organise the sidebar
 
-Create an ordinary note titled **Contents** using the existing editor:
+Use **Add category** in the sidebar, enter a name and choose its parent (or
+**Top level**), then select **Create category**. The small folder-plus button beside
+a category adds a subcategory there directly. Categories expand and collapse.
+
+Use **Add note**, or the file-plus button beside a category, to choose between:
+
+- **Create new note**: creates a blank note, adds it to the chosen category and
+  opens it in the existing editor immediately.
+- **Link existing note**: adds a note by its exact title, preserving its contents.
+
+The first confirmed addition creates the ordinary **Contents** note if it is
+missing. Opening or cancelling a form does not create anything. There is no
+Markdown setup to learn. Categories and note links are stored in that note;
+the pencil button opens it for optional advanced editing, reordering or removing
+menu entries. For example, this is the equivalent Markdown:
 
 ```markdown
 # Contents
@@ -21,14 +35,24 @@ Create an ordinary note titled **Contents** using the existing editor:
 ```
 
 Headings become expandable categories; standalone bulleted wikilinks open notes.
-Change the menu by editing Contents, then use Refresh contents if needed. The
-menu also refreshes after a save and navigation. Markdown and WYSIWYG modes are
-supported. Native keyboard controls operate the expandable categories.
+The controls preserve existing source, including extra text and code examples.
+The menu refreshes after a save and navigation; the refresh icon reloads it on
+demand. Optional direct editing supports Markdown and WYSIWYG modes. Native
+keyboard controls operate categories, forms and links. Creating a category is
+limited to six heading levels; use plain names without HTML or link brackets.
 
-This is a manually curated menu. Files remain in Flatnotes' flat Markdown
-directory, with unique note titles. Adding or renaming a document may require
-updating its Contents link. A note can appear under several categories. Search
-all notes also finds notes that are not listed in Contents.
+Files remain in Flatnotes' flat Markdown directory, with unique note titles.
+Notes created using the sidebar are linked automatically. Notes created through
+the original New Note button can be added using Link existing note. Renaming a
+document may require updating its Contents link. A note can appear under several
+categories. Search also finds notes that are not listed in Contents.
+
+Sidebar writes pause while Contents is being edited, and its editor pauses while
+a sidebar save is in progress. The controls re-read Contents before writing and
+refuse a stale selection. This is not an atomic multi-writer transaction. If a
+new note is created but its menu update fails, it remains searchable; refresh and
+choose Link existing note to add it. No existing note is overwritten or deleted
+as recovery. A duplicate title requires an explicit choice to link that note.
 
 Only headings and standalone note links are interpreted by the sidebar. HTML,
 external URLs, embedded content, link aliases and anchors are not navigation
@@ -56,8 +80,10 @@ Month view is a read-only calendar of the same entries. Add or edit entries in
 Home, using the normal editor; no separate event database exists. Dates represent
 calendar days, with no time-zone conversion, reminders, recurrence or sync.
 
-Existing Home or Contents notes are never replaced, and missing notes are never
-created automatically. Inspect any pre-existing note before adopting the naming
+Existing Home notes are never replaced. Existing Contents source is preserved
+when adding entries; missing Contents is created only on an explicit confirmed
+sidebar addition. Missing Home is never created automatically.
+Inspect any pre-existing note before adopting the naming
 convention. If either is renamed, restore its original title or recreate it
 deliberately through the normal editor. No recovery or migration runs implicitly.
 

@@ -49,10 +49,16 @@ try {
     await page.getByText('WYSIWYG',{exact:true}).click();
     await page.getByText('Markdown',{exact:true}).click();
     await page.getByRole('button',{name:'Save',exact:true}).click();
+    await page.getByText('Note saved successfully ✓',{exact:true}).waitFor();
     const after = (await api('/api/notes/Contents')).data.content;
     const simplify = n => n.map(({label,kind,children}) => ({label,kind,...(children ? {children:simplify(children)} : {})}));
     assert.deepEqual(simplify(parseContents(before).nodes), simplify(parseContents(after).nodes));
     await page.getByRole('button',{name:'Edit',exact:true}).click();
+    // The editor may finish normalising markup after the first save.
+    const confirmation = page.locator('div.fixed').filter({hasText:'Do you want to save your changes?'});
+    if (await confirmation.isVisible()) await confirmation.getByRole('button',{name:'Save',exact:true}).click();
+    await page.locator('.toast-viewer').waitFor();
+    assert.deepEqual(simplify(parseContents(before).nodes), simplify(parseContents((await api('/api/notes/Contents')).data.content).nodes));
   });
   await check('date-sorted tasks and calendar do not rewrite Home', async () => {
     const before = (await api('/api/notes/Home')).data.content;

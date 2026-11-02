@@ -6,9 +6,9 @@ release or a claim of endorsement.
 
 | Files | Reason |
 | --- | --- |
-| client/extensions/notebook/ | Bounded Contents parser/sidebar, private in-memory fetching, dated task list and small derived month view |
+| client/extensions/notebook/ | Bounded Contents parsing/insertion, category/new-note/existing-link controls, private in-memory fetching, dated tasks/month view |
 | client/App.vue, client/views/Home.vue | Mount the sidebar and existing Home/task navigation |
-| client/views/Note.vue | Save notification, route guard, request/session cleanup; preserve existing editor |
+| client/views/Note.vue, client/globalStore.js | Save notification, route guard, request/session cleanup, mutual Contents editing/save guard and explicit edit-on-open; preserve existing editor |
 | client/api.js, client/tokenStorage.js | Generic errors, session invalidation and draft cleanup, Secure cookie on HTTPS |
 | server/helpers.py | Stricter literal filename validation |
 | server/attachments/file_system/file_system.py | Safe image subset and forced download for active/unknown content |
