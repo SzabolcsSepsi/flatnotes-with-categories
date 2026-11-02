@@ -92,7 +92,7 @@ try {
     await api('/api/notes',{title:'Home',content:'# Home\n- [ ] 2026-01-03 — Earlier'},'POST');
   });
   await check('sidebar navigation immediately protects unsaved edits', async () => {
-    await page.getByRole('link',{name:'Home note',exact:true}).click();
+    await page.getByRole('link',{name:'todo',exact:true}).click();
     await page.getByRole('button',{name:'Edit',exact:true}).click();
     const title = page.getByPlaceholder('Title',{exact:true});
     await title.fill('Unsaved synthetic title');

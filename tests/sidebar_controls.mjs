@@ -123,7 +123,7 @@ try {
     await page.getByRole('button',{name:'Edit',exact:true}).click();
     await category('Added in clean view');
     await page.locator('.toast-viewer').getByText('Added in clean view',{exact:true}).waitFor();
-    await nav.getByRole('link',{name:'Home note',exact:true}).click();
+    await nav.getByRole('link',{name:'todo',exact:true}).click();
   });
   await check('in-flight sidebar write blocks Contents editing and refreshes before next edit', async () => {
     await nav.getByRole('link',{name:'Open / edit contents',exact:true}).click();
@@ -152,7 +152,7 @@ try {
     await page.waitForFunction(()=>!document.querySelector('.notebook-create-actions button')?.disabled);
     assert.equal(await page.getByRole('button',{name:'Edit',exact:true}).isDisabled(),false);
     await page.unroute('**/api/notes/Contents',handler);
-    await nav.getByRole('link',{name:'Home note',exact:true}).click();
+    await nav.getByRole('link',{name:'todo',exact:true}).click();
   });
   await check('partial save failure keeps the new note and permits linking it later', async () => {
     await noteForm('Recoverable page');
