@@ -5,6 +5,12 @@ Advisories page when available. Do not put note contents, credentials or working
 exploit targets into public issues. A public repository does not imply that a
 running instance or its notes should be public.
 
+Reporting is welcome, but no response or remediation timeframe is promised.
+Automated checks and past fixes are not a commitment to ongoing monitoring,
+updates or support. See [NOTICE.md](NOTICE.md), including its mandatory legal
+exceptions. Existing security tooling remains available to operators and
+voluntary maintainers.
+
 The extension adds no server endpoints, filesystem navigation, share links or
 runtime feature libraries. The category menu and task/calendar views use the
 existing authenticated note API and plain-text Vue bindings. The Python backend,
