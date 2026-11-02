@@ -40,7 +40,19 @@ class FileSystemAttachments(BaseAttachments):
         filepath = os.path.join(self.storage_path, filename)
         if not os.path.isfile(filepath):
             raise FileNotFoundError(f"'{filename}' not found.")
-        return FileResponse(filepath)
+        # Never serve active uploads as application-origin HTML or SVG.
+        inline_types = {'.png': 'image/png', '.jpg': 'image/jpeg',
+                        '.jpeg': 'image/jpeg', '.gif': 'image/gif',
+                        '.webp': 'image/webp'}
+        media_type = inline_types.get(os.path.splitext(filename)[1].lower())
+        return FileResponse(
+            filepath, media_type=media_type or 'application/octet-stream',
+            filename=filename,
+            content_disposition_type='inline' if media_type else 'attachment',
+            headers={'X-Content-Type-Options': 'nosniff',
+                     'Content-Security-Policy': "sandbox; default-src 'none'",
+                     'Cache-Control': 'no-store'},
+        )
 
     def _save_file(self, file: UploadFile):
         filepath = os.path.join(self.storage_path, file.filename)

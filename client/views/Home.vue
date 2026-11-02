@@ -1,7 +1,9 @@
 <template>
-  <div class="flex h-full justify-center">
+  <TaskAgenda v-if="route.query.view === 'tasks'" />
+  <div v-else class="flex h-full justify-center">
     <div class="flex max-w-[500px] flex-1 flex-col items-center pt-[25vh]">
       <Logo class="mb-5" />
+      <RouterLink class="mb-4 underline" :to="{ name: 'note', params: { title: 'Home' } }">Open Home note</RouterLink>
       <SearchInput class="mb-5 shadow-[0_0_20px] shadow-theme-shadow" />
       <LoadingIndicator
         ref="loadingIndicator"
@@ -42,7 +44,8 @@
 import { mdiDotsHorizontal } from "@mdi/js";
 import { useToast } from "primevue/usetoast";
 import { onMounted, ref, watch } from "vue";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRoute } from "vue-router";
+import TaskAgenda from '../extensions/notebook/TaskAgenda.vue';
 
 import { apiErrorHandler, getNotes } from "../api.js";
 import CustomButton from "../components/CustomButton.vue";
@@ -53,11 +56,13 @@ import { useGlobalStore } from "../globalStore.js";
 import SearchInput from "../partials/SearchInput.vue";
 
 const globalStore = useGlobalStore();
+const route = useRoute();
 const loadingIndicator = ref();
 const notes = ref([]);
 const toast = useToast();
 
 function init() {
+  if (route.query.view === 'tasks') return;
   if (globalStore.config.quickAccessHide) {
     return;
   }
@@ -72,10 +77,12 @@ function init() {
     globalStore.config.quickAccessLimit + 1,
   )
     .then((data) => {
+      if (route.query.view === 'tasks' || !loadingIndicator.value) return;
       notes.value = data;
       loadingIndicator.value.setLoaded();
     })
     .catch((error) => {
+      if (!loadingIndicator.value) return;
       loadingIndicator.value.setFailed();
       apiErrorHandler(error, toast);
     });
@@ -83,5 +90,6 @@ function init() {
 
 // Watch to allow for delayed config load.
 watch(() => globalStore.config.hideRecentlyModified, init);
+watch(() => route.query.view, init);
 onMounted(init);
 </script>

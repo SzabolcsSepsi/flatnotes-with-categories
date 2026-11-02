@@ -3,7 +3,7 @@ import * as constants from "./constants.js";
 import { Note, SearchResult } from "./classes.js";
 
 import axios from "axios";
-import { getStoredToken } from "./tokenStorage.js";
+import { clearStoredToken, getStoredToken } from "./tokenStorage.js";
 import { getToastOptions } from "./helpers.js";
 import router from "./router.js";
 
@@ -25,15 +25,27 @@ api.interceptors.request.use(
   },
 );
 
+api.interceptors.response.use(response => response, error => {
+  const sentToken = error.config?.headers?.Authorization;
+  const currentToken = getStoredToken();
+  if (error.response?.status === 401 && (sentToken ? sentToken === `Bearer ${currentToken}` : !currentToken)) {
+    clearStoredToken();
+    router.replace({ name: 'login' });
+  }
+  return Promise.reject(error);
+});
+
 export function apiErrorHandler(error, toast) {
   if (error.response?.status === 401) {
+    const sentToken = error.config?.headers?.Authorization;
+    if (getStoredToken() && sentToken !== `Bearer ${getStoredToken()}`) return;
     const redirectPath = router.currentRoute.value.fullPath;
     router.push({
       name: "login",
       query: { [constants.params.redirect]: redirectPath },
     });
   } else {
-    console.error(error);
+    // Never log private request/response objects.
     toast.add(
       getToastOptions(
         "Unknown error communicating with the server. Please try again.",

@@ -1,0 +1,25 @@
+.notebook-layout { display:flex; gap:1.5rem; flex:1; min-height:0; }
+.notebook-main { flex:1; min-width:0; }
+.notebook-sidebar { width:16rem; flex-shrink:0; padding-right:1rem; border-right:1px solid rgb(var(--theme-border)); overflow-wrap:anywhere; }
+.notebook-sidebar:not([open]) { width:auto; }
+.notebook-menu { cursor:pointer; font-weight:600; margin-bottom:1rem; }
+.notebook-shortcuts { display:flex; flex-direction:column; gap:.5rem; margin-bottom:1rem; }
+.notebook-sidebar a, .notebook-agenda a { text-decoration:underline; text-underline-offset:3px; }
+.notebook-tree { padding-left:.8rem; }
+.notebook-tree li { margin:.5rem 0; }
+.notebook-tree summary { cursor:pointer; }
+.notebook-tree a[aria-current="page"] { font-weight:600; color:rgb(var(--theme-brand)); }
+.notebook-button { border:1px solid rgb(var(--theme-border)); border-radius:.3rem; padding:.3rem .6rem; cursor:pointer; }
+.notebook-button:disabled { opacity:.5; cursor:default; }
+.notebook-sidebar :focus-visible, .notebook-agenda :focus-visible { outline:2px solid rgb(var(--theme-brand)); outline-offset:3px; }
+.notebook-sidebar p, .notebook-agenda p { margin:.7rem 0; }
+.notebook-hint { color:rgb(var(--theme-text-muted)); font-size:.85rem; }
+.notebook-actions { display:flex; align-items:center; flex-wrap:wrap; gap:.8rem; margin:1rem 0; }
+.notebook-task-list li { display:flex; align-items:baseline; gap:1rem; margin:.8rem 0; overflow-wrap:anywhere; }
+.notebook-task-list time { flex-shrink:0; font-variant-numeric:tabular-nums; }
+.notebook-done { opacity:.65; text-decoration:line-through; }
+.notebook-calendar { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
+.notebook-calendar > * { padding:.35rem; overflow-wrap:anywhere; }
+.notebook-day { min-height:5rem; border:1px solid rgb(var(--theme-border)); font-size:.8rem; }
+@media(max-width:767px) { .notebook-layout { flex-direction:column; } .notebook-sidebar { width:100%; border-right:0; border-bottom:1px solid rgb(var(--theme-border)); padding-bottom:.8rem; } .notebook-calendar { font-size:.7rem; } }
+@media print { .notebook-layout { display:block; } }

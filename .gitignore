@@ -248,3 +248,6 @@ dist
 .vscode/
 data/
 /notes/
+.qa/
+.env.*
+!.env.example

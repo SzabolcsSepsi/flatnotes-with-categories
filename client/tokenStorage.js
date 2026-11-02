@@ -7,7 +7,8 @@ function getBasePath() {
 
 function getCookieString(token) {
   const basePath = getBasePath();
-  return `${tokenStorageKey}=${token}; Path=${basePath}; SameSite=Strict`;
+  const secure = location.protocol === 'https:' ? '; Secure' : '';
+  return `${tokenStorageKey}=${token}; Path=${basePath}; SameSite=Strict${secure}`;
 }
 
 export function storeToken(token, persist = false) {
@@ -30,8 +31,9 @@ export function loadStoredToken() {
 }
 
 export function clearStoredToken() {
-  sessionStorage.removeItem(tokenStorageKey);
-  localStorage.removeItem(tokenStorageKey);
+  window.dispatchEvent(new Event('flatnotes:session-ended'));
+  sessionStorage.clear();
+  localStorage.clear();
   document.cookie =
     getCookieString() + "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }

@@ -17,7 +17,9 @@ def is_valid_filename(value):
     """Raise ValueError if the declared string contains any of the following
     characters: <>:"/\\|?*"""
     invalid_chars = r'<>:"/\|?*'
-    if any(invalid_char in value for invalid_char in invalid_chars):
+    if (not value or len(value.encode('utf-8')) > 240 or not value.strip('. ')
+            or any(ord(char) < 32 or ord(char) == 127 for char in value)
+            or any(invalid_char in value for invalid_char in invalid_chars)):
         raise ValueError(
             "title cannot include any of the following characters: "
             + invalid_chars

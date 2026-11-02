@@ -27,6 +27,15 @@ app = FastAPI(
 replace_base_href("client/dist/index.html", global_config.path_prefix)
 
 
+@app.middleware('http')
+async def private_response_headers(request, call_next):
+    response = await call_next(request)
+    response.headers['Cache-Control'] = 'no-store'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    return response
+
+
 # region UI
 @router.get("/", include_in_schema=False)
 @router.get("/login", include_in_schema=False)

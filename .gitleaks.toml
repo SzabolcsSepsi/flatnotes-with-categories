@@ -1,0 +1,13 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated local environments and build/test outputs"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)\.venv/''',
+  '''(^|/)\.qa/''',
+  '''(^|/)\.git/''',
+  '''(^|/)client/dist/''',
+  '''(^|/)__pycache__/'''
+]
