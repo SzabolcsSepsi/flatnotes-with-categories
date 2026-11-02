@@ -1,6 +1,13 @@
 # Maintenance and updates
 
-The repository maintainer owns upstream integration and security response.
+This is a maintenance procedure for anyone choosing to operate or maintain a
+copy. It is not a promise that this repository's maintainers will perform the
+procedure for users or continue providing updates, monitoring or support. See
+[NOTICE.md](NOTICE.md) for the absence of a voluntary maintenance commitment and
+the mandatory legal limits on warranty and liability exclusions.
+
+The operator or person maintaining a copy must assign responsibility for upstream
+integration and security response for that copy.
 GitHub Actions runs tests and advisory checks on pushes, pull requests and daily
 at 07:17 UTC. A read-only release check fails when the latest original Flatnotes
 release differs from UPSTREAM.json. Dependabot proposes weekly npm, uv, Docker

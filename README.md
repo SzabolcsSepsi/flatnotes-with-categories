@@ -1,133 +1,101 @@
 # Flatnotes with categories
 
-This fork adds a hierarchical sidebar with direct category and note controls,
-an ordinary Home note, date-sorted tasks and a small read-only month view. It keeps Flatnotes' Markdown
-storage, editor and search. See [NOTEBOOK.md](NOTEBOOK.md) for setup and examples,
-[MAINTENANCE.md](MAINTENANCE.md) for updates, and [SECURITY.md](SECURITY.md) for
-security boundaries. Build this fork's image to use these additions.
+A small, self-hosted extension of [Flatnotes](https://github.com/dullage/flatnotes)
+for people who like simple Markdown notes and want a clearer overview as their
+collection grows. Keep the original editor and full-text search, and add a
+clickable hierarchy, a Home note and an easy way to see dated tasks.
 
-The original Flatnotes documentation and attribution follow below.
+> **IMPORTANT: NO COMMITMENT TO ONGOING MAINTENANCE OR REGULAR UPDATES.**
+> This free source-code fork is provided **AS IS**. Do not rely on its authors,
+> contributors or maintainers to keep it updated, monitor vulnerabilities, provide
+> support or supply security fixes within any period. **You decide whether to
+> download, run and expose it, and you are responsible for operating and updating
+> your installation.** Warranty and liability exclusions apply only within the
+> limits permitted by applicable law. Read the full [notice](NOTICE.md), including
+> its mandatory-liability exceptions, before using or distributing the software.
 
-<p align="center">
-  <img src="docs/logo.svg" width="300px"></img>
-</p>
-<p align="center">
-  <img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/dullage/flatnotes?style=for-the-badge">
-</p>
+## What this fork adds
 
-A self-hosted, database-less note-taking web app that utilises a flat folder of markdown files for storage.
+| Feature | How it works | Why it can be useful |
+| --- | --- | --- |
+| Hierarchical sidebar | Expandable categories and subcategories with clickable note links | Browse related material without remembering every title or search term |
+| Add category | Create a category directly in the sidebar and choose its parent | Organise a growing collection through simple controls |
+| Add note | Create a note inside a category and open the existing editor immediately | Start writing in the right place |
+| Link existing note | Add an existing note to one or several categories without changing its content | Build several useful views of the same material |
+| Home note | An ordinary editable note, accessible from the sidebar | Keep an overview, links and a short to-do list together |
+| Tasks by date | A chronological view of dated checkbox entries in Home | See upcoming tasks in order while keeping the original note editable |
+| Month view | A small read-only calendar derived from those same dated entries | See which days contain tasks at a glance |
 
-Log into the [demo site](https://demo.flatnotes.io) and take a look around. *Note: This site resets every 15 minutes.*
+Navigation is stored in an ordinary **Contents** Markdown note. The sidebar
+controls maintain it for you; direct editing remains available when wanted.
+Your documents stay in Flatnotes' flat Markdown directory with unique titles.
+The categories are a navigation hierarchy, rather than physical filesystem
+folders. Search finds all notes, including those outside the menu.
 
-## Contents
+The task and calendar views read dates from Home; they introduce no separate
+appointment database, reminder service or synchronisation account. These features
+add no runtime libraries or server endpoints. See [NOTEBOOK.md](NOTEBOOK.md) for
+setup, examples and the limits of the editing controls.
 
-* [Design Principle](#design-principle)
-* [Features](#features)
-* [Getting Started](#getting-started)
-  * [Hosted](#hosted)
-  * [Self Hosted](#self-hosted)
-* [Roadmap](#roadmap)
-* [Contributing](#contributing)
-* [Sponsorship](#sponsorship)
-* [Thanks](#thanks)
+## What stays familiar
 
-## Design Principle
+- The original Markdown and WYSIWYG editor.
+- Full-text search, tags and wikilinks.
+- Ordinary Markdown files and existing attachment handling.
+- Light and dark themes, with a responsive interface.
+- The existing authentication modes and configuration model.
 
-flatnotes is designed to be a distraction-free note-taking app that puts your note content first. This means:
+This is an independent fork. The upstream project does not provide these added
+features or undertake support for this version. References to Flatnotes identify
+its origin and do not imply endorsement.
 
-* A clean and simple user interface.
-* No folders, notebooks or anything like that. Just all of your notes, backed by powerful search and tagging functionality.
-* Quick access to a full-text search from anywhere in the app (keyboard shortcut "/").
+## Run it yourself
 
-Another key design principle is not to take your notes hostage. Your notes are just markdown files. There's no database, proprietary formatting, complicated folder structures or anything like that. You're free at any point to just move the files elsewhere and use another app.
+Build this repository to get the added features. The original upstream container
+image and upstream demo are separate versions.
 
-Equally, the only thing flatnotes caches is the search index and that's incrementally synced on every search (and when flatnotes first starts). This means that you're free to add, edit & delete the markdown files outside of flatnotes even whilst flatnotes is running.
-
-## Features
-
-* Mobile responsive web interface.
-* Raw/WYSIWYG markdown editor modes.
-* Advanced search functionality.
-* Note "tagging" functionality.
-* Customisable home page.
-* Wikilink support to easily link to other notes (`[[My Other Note]]`).
-* Light/dark themes.
-* Multiple authentication options (none, read-only, username/password, 2FA).
-* Restful API.
-
-See [the wiki](https://github.com/dullage/flatnotes/wiki) for more details.
-
-## Getting Started
-
-### Hosted
-
-A quick and easy way to get started with flatnotes is to host it on PikaPods. Just click the button below and follow the instructions.
-
-[![PikaPods](https://www.pikapods.com/static/run-button-34.svg)](https://www.pikapods.com/pods?run=flatnotes)
-
-
-### Self Hosted
-
-If you'd prefer to host flatnotes yourself then the recommendation is to use Docker.
-
-### Example Docker Run Command
-
-```shell
-docker run -d \
-  -e "PUID=1000" \
-  -e "PGID=1000" \
-  -e "FLATNOTES_AUTH_TYPE=password" \
-  -e "FLATNOTES_USERNAME=user" \
-  -e 'FLATNOTES_PASSWORD=changeMe!' \
-  -e "FLATNOTES_SECRET_KEY=aLongRandomSeriesOfCharacters" \
-  -v "$(pwd)/data:/data" \
-  -p "8080:8080" \
-  dullage/flatnotes:latest
+```sh
+docker build --pull -t flatnotes-local:reviewed .
 ```
 
-### Example Docker Compose
-```yaml
-version: "3"
+Before starting an instance, configure a dedicated data directory, authentication
+credentials and a private random signing secret. Start with a loopback-only test
+instance. Follow [NOTEBOOK.md](NOTEBOOK.md) for the build requirements and
+[SECURITY.md](SECURITY.md) for authentication, deployment boundaries and known
+advisory qualifications. Protect and test your backups before using important
+data. This repository does not supply a hosted service.
 
-services:
-  flatnotes:
-    container_name: flatnotes
-    image: dullage/flatnotes:latest
-    environment:
-      PUID: 1000
-      PGID: 1000
-      FLATNOTES_AUTH_TYPE: "password"
-      FLATNOTES_USERNAME: "user"
-      FLATNOTES_PASSWORD: "changeMe!"
-      FLATNOTES_SECRET_KEY: "aLongRandomSeriesOfCharacters"
-    volumes:
-      - "./data:/data"
-      # Optional. Allows you to save the search index in a different location: 
-      # - "./index:/data/.flatnotes"
-    ports:
-      - "8080:8080"
-    restart: unless-stopped
-```
+## Maintenance and security
 
-See the [Environment Variables](https://github.com/dullage/flatnotes/wiki/Environment-Variables) article in the wiki for a full list of configuration options.
+[MAINTENANCE.md](MAINTENANCE.md) describes the available checks, upstream integration,
+dependency updates and rollback procedure. [PATCH_MAP.md](PATCH_MAP.md) identifies
+changes to upstream files.
 
-## Roadmap
+Automated checks, dependency proposals, test results and past fixes are tools and
+historical observations. They are **not** a promise of future monitoring, prompt
+responses, continuing maintenance, compatibility or vulnerability-free software.
+No support period, release schedule, response time or service-level agreement is
+offered through this repository. Voluntary work may stop, subject to mandatory law.
 
-I want to keep flatnotes as simple and distraction-free as possible which means limiting new features. This said, I welcome feedback and suggestions.
+Report suspected vulnerabilities using the private reporting route described in
+[SECURITY.md](SECURITY.md); never publish credentials or private notes in reports.
+There is no guaranteed response or remediation timeframe.
 
-## Contributing
+## Licence and attribution
 
-If you're interested in contributing to flatnotes, then please read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+The project, including the modifications in this fork, is distributed under the
+[MIT License](LICENSE), except where a file or third-party component states
+otherwise. The original Flatnotes copyright and permission notice is retained
+unchanged. MIT permits use, modification and redistribution, including commercial
+use, subject to its notice requirements. This release is provided free of charge;
+that does not restrict downstream users' MIT rights.
 
-## Sponsorship
+Dependencies, fonts and other third-party materials retain their own licences and
+notice requirements. For example, Poppins is covered by the included
+[SIL Open Font License](client/assets/fonts/Poppins/OFL.txt). Preserve applicable
+notices when distributing source, compiled assets or container images. No right to
+another party's trademarks or endorsement is granted by this description.
 
-If you find this project useful, please consider buying me a beer. It would genuinely make my day.
-
-[![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/Dullage)
-
-## Thanks
-
-A special thanks to 2 fantastic open-source projects that make flatnotes possible.
-
-* [Whoosh](https://whoosh.readthedocs.io/en/latest/intro.html) - A fast, pure Python search engine library.
-* [TOAST UI Editor](https://ui.toast.com/tui-editor) - A GFM Markdown and WYSIWYG editor for the browser.
+The [full warranty, maintenance and liability notice](NOTICE.md) applies within
+mandatory legal limits. It does not remove rights that applicable law makes
+non-excludable.
