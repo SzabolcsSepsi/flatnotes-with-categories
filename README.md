@@ -1,7 +1,7 @@
 # Flatnotes with categories
 
-This fork adds a manually curated hierarchical sidebar, an ordinary Home note,
-date-sorted tasks and a small read-only month view. It keeps Flatnotes' Markdown
+This fork adds a hierarchical sidebar with direct category and note controls,
+an ordinary Home note, date-sorted tasks and a small read-only month view. It keeps Flatnotes' Markdown
 storage, editor and search. See [NOTEBOOK.md](NOTEBOOK.md) for setup and examples,
 [MAINTENANCE.md](MAINTENANCE.md) for updates, and [SECURITY.md](SECURITY.md) for
 security boundaries. Build this fork's image to use these additions.
