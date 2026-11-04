@@ -37,7 +37,7 @@ async function category(name, parent) {
   await nav.getByRole('button',{name:parent ? `Add subcategory to ${parent}` : 'Add category',exact:true}).click();
   await page.getByLabel('Category name',{exact:true}).fill(name);
   await page.getByRole('button',{name:'Create category',exact:true}).click();
-  await nav.getByText(name,{exact:true}).waitFor();
+  await nav.getByText(name,{exact:true}).waitFor({state:'attached'});
   await page.waitForFunction(() => !document.querySelector('.notebook-create-actions button')?.disabled);
 }
 async function noteForm(title, mode='create', parent='Projects') {
