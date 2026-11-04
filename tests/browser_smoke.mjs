@@ -22,7 +22,7 @@ async function login() {
   await guideLink.waitFor({state:'attached'});
 }
 async function openGuideCategory() {
-  const summary = page.locator('.notebook-tree > li > details > summary');
+  const summary = page.locator('.notebook-sidebar nav > .notebook-tree > li > details > summary');
   if (!await summary.evaluate(el => el.parentElement.open)) await summary.click();
 }
 async function api(path, data, method='GET') {
