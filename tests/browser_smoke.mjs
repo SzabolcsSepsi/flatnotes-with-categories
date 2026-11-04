@@ -7,7 +7,7 @@ if (!base || !/^http:\/\/127\.0\.0\.1:\d+(?:\/[a-z]+)?$/.test(base)) throw new E
 const browser = await chromium.launch({ headless: true, ...(process.env.TEST_BROWSER ? { executablePath: process.env.TEST_BROWSER } : {}) });
 const context = await browser.newContext({ viewport: { width: 1365, height: 900 } });
 const page = await context.newPage();
-const guideLink = page.getByRole('navigation', {name:'Notebook contents'}).getByRole('link', {name:'Guide',exact:true});
+const guideLink = page.getByRole('navigation', {name:'Notebook contents'}).getByRole('link', {name:'Guide',exact:true,includeHidden:true});
 const errors = [];
 const external = [];
 page.on('pageerror', e => errors.push(e.message));
@@ -19,7 +19,11 @@ async function login() {
   await page.getByPlaceholder('Password', { exact: true }).fill(process.env.TEST_PASSWORD);
   await page.getByRole('button', { name: 'Log In', exact: true }).click();
   await page.getByRole('navigation', { name: 'Notebook contents' }).waitFor();
-  await guideLink.waitFor();
+  await guideLink.waitFor({state:'attached'});
+}
+async function openGuideCategory() {
+  const summary = page.locator('.notebook-tree > li > details > summary');
+  if (!await summary.evaluate(el => el.parentElement.open)) await summary.click();
 }
 async function api(path, data, method='GET') {
   return page.evaluate(async ({ path, data, method, base }) => {
@@ -37,7 +41,16 @@ try {
     assert.equal(await page.getByRole('navigation', { name:'Notebook contents' }).count(), 0);
     await login();
   });
-  await check('nested menu opens the existing note route', async () => {
+  await check('categories start collapsed and nested notes open after manual expansion', async () => {
+    const nav = page.getByRole('navigation', {name:'Notebook contents'});
+    assert.equal(await nav.locator('.notebook-tree details[open]').count(),0);
+    assert.equal(await guideLink.isVisible(),false);
+    await openGuideCategory();
+    const nestedLink = nav.getByRole('link',{name:'Überblick & 10%',exact:true,includeHidden:true});
+    assert.equal(await nestedLink.isVisible(),false);
+    await nav.getByText('Reference',{exact:true}).click();
+    await nestedLink.click();
+    await page.locator('.toast-viewer').getByText('Unicode note',{exact:true}).waitFor();
     await guideLink.click();
     await page.locator('.toast-viewer').getByText('Synthetic text', { exact:true }).waitFor();
     assert.equal(await guideLink.getAttribute('aria-current'), 'page');
@@ -92,6 +105,7 @@ try {
     await api('/api/notes',{title:'Home',content:'# Home\n- [ ] 2026-01-03 — Earlier'},'POST');
   });
   await check('sidebar navigation immediately protects unsaved edits', async () => {
+    await openGuideCategory();
     await page.getByRole('link',{name:'todo',exact:true}).click();
     await page.getByRole('button',{name:'Edit',exact:true}).click();
     const title = page.getByPlaceholder('Title',{exact:true});
@@ -128,6 +142,7 @@ try {
   await check('late mutation responses cannot revive a logged-out note', async () => {
     for (const method of ['PATCH', 'DELETE', 'POST']) {
       await login();
+      await openGuideCategory();
       await guideLink.click();
       await page.locator('.toast-viewer').getByText('Synthetic text',{exact:true}).waitFor();
       let release;
