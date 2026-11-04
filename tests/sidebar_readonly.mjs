@@ -7,8 +7,11 @@ try {
   const page=await browser.newPage();
   await page.goto(base+'/');
   const nav=page.getByRole('navigation',{name:'Notebook contents'});
+  await nav.getByRole('link',{name:'Guide',exact:true,includeHidden:true}).waitFor({state:'attached'});
+  assert.equal(await nav.locator('.notebook-tree details[open]').count(),0);
+  await nav.getByText('Projects',{exact:true}).click();
   await nav.getByRole('link',{name:'Guide',exact:true}).waitFor();
-  assert.equal(await nav.getByRole('button',{name:/Add /}).count(),0);
+  assert.equal(await nav.getByRole('button',{name:/Add /,includeHidden:true}).count(),0);
   assert.equal(await nav.locator('form').count(),0);
   console.log('PASS read-only navigation has no mutation controls');
 } finally { await browser.close(); }

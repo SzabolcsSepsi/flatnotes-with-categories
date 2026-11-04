@@ -1,7 +1,7 @@
 <template>
   <ul class="notebook-tree">
     <li v-for="node in nodes" :key="node.id">
-      <details v-if="node.kind === 'category'" open>
+      <details v-if="node.kind === 'category'">
         <summary><span class="notebook-category-label"><NotebookIcon name="folder" />{{ node.label }}</span></summary>
         <div v-if="canModify" class="notebook-category-actions">
           <button class="notebook-tool" :aria-label="`Add note to ${node.label}`" :title="`Add note to ${node.label}`" @click="$emit('add', { kind: 'note', parentId: node.id })"><NotebookIcon name="addNote" /></button>

@@ -33,6 +33,7 @@ async function refresh() {
   await page.waitForFunction(() => !document.querySelector('.notebook-create-actions button')?.disabled);
 }
 async function category(name, parent) {
+  if (parent) await expandCategory(parent);
   await nav.getByRole('button',{name:parent ? `Add subcategory to ${parent}` : 'Add category',exact:true}).click();
   await page.getByLabel('Category name',{exact:true}).fill(name);
   await page.getByRole('button',{name:'Create category',exact:true}).click();
@@ -40,9 +41,14 @@ async function category(name, parent) {
   await page.waitForFunction(() => !document.querySelector('.notebook-create-actions button')?.disabled);
 }
 async function noteForm(title, mode='create', parent='Projects') {
+  if (parent) await expandCategory(parent);
   await nav.getByRole('button',{name:parent ? `Add note to ${parent}` : 'Add note',exact:true}).click();
   await page.getByLabel('Note action',{exact:true}).selectOption(mode);
   await page.getByLabel('Note title',{exact:true}).fill(title);
+}
+async function expandCategory(name) {
+  const label = nav.getByText(name,{exact:true});
+  if (!await label.evaluate(el => el.closest('details').open)) await label.click();
 }
 async function logout() {
   await page.getByRole('button',{name:'Menu',exact:true}).click();
@@ -164,12 +170,13 @@ try {
     assert.equal(await page.getByLabel('Note action',{exact:true}).inputValue(),'link');
     await page.unroute('**/api/notes/Contents',handler);
     await page.getByRole('button',{name:'Add link',exact:true}).click();
-    await nav.getByRole('link',{name:'Recoverable page',exact:true}).waitFor();
+    await nav.getByRole('link',{name:'Recoverable page',exact:true,includeHidden:true}).waitFor({state:'attached'});
   });
   await check('sidebar is usable on mobile, keyboard, and in dark mode', async () => {
     await api('/api/notes/Contents',{newContent:'# Contents\n## Projects\n- [[Overview]]\n### Reference\n- [[Guide]]\n## Reading\n- [[Reading list]]\n## Ideas\n'},'PATCH');
     await api('/api/notes',{title:'Overview',content:'# Overview\nA place for project notes and useful references.\n\n## Next steps\n- Collect ideas\n- Add a note to a category\n'},'POST');
     await refresh();
+    await expandCategory('Projects');
     await nav.getByRole('link',{name:'Overview',exact:true}).click();
     await page.locator('.toast-viewer').getByText('A place for project notes and useful references.',{exact:true}).waitFor();
     await page.setViewportSize({width:390,height:844});
