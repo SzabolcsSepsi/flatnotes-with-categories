@@ -57,6 +57,7 @@
         <!-- Delete Button -->
         <CustomButton
           v-show="canModify && !isNewNote"
+          :disabled="contentsLocked"
           label="Delete"
           :iconPath="mdilDelete"
           @click="deleteHandler"
@@ -78,6 +79,7 @@
         <!-- Edit Toggle -->
         <Toggle
           v-if="canModify"
+          :disabled="contentsLocked"
           label="Edit"
           :isOn="editMode"
           class="ml-1"
@@ -124,7 +126,7 @@ import { mdilContentSave, mdilDelete } from "@mdi/light-js";
 import Mousetrap from "mousetrap";
 import { useToast } from "primevue/usetoast";
 import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from "vue";
-import { useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from "vue-router";
+import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from "vue-router";
 
 import {
   apiErrorHandler,
@@ -156,6 +158,7 @@ const canModify = computed(
 let contentChangedTimeout = null;
 const editMode = ref(false);
 const globalStore = useGlobalStore();
+const contentsLocked = computed(() => props.title === 'Contents' && globalStore.contentsWriting);
 const isSaveChangesModalVisible = ref(false);
 const isDeleteModalVisible = ref(false);
 const isDraftModalVisible = ref(false);
@@ -164,6 +167,7 @@ const loadingIndicator = ref();
 const note = ref({});
 const reservedFilenameCharacters = /[<>:"/\\|?*]/;
 const router = useRouter();
+const route = useRoute();
 const newTitle = ref();
 const toast = useToast();
 const toastEditor = ref();
@@ -186,6 +190,7 @@ function init() {
         if (!active || request !== requestGeneration) return;
         note.value = data;
         loadingIndicator.value.setLoaded();
+        if (route.query.edit === '1' && canModify.value) nextTick(editHandler);
       })
       .catch((error) => {
         if (!active || request !== requestGeneration) return;
@@ -220,6 +225,7 @@ function toggleEditModeHandler() {
 }
 
 function editHandler() {
+  if (contentsLocked.value || (!note.value.title && !isNewNote.value)) return;
   const draftContent = loadDraft();
   if (draftContent) {
     isDraftModalVisible.value = true;
@@ -229,6 +235,7 @@ function editHandler() {
 }
 
 function setEditMode() {
+  if (contentsLocked.value) return;
   newTitle.value = note.value.title;
   unsavedChanges.value = false;
   editMode.value = true;
@@ -241,10 +248,12 @@ function getInitialEditorValue() {
 
 // Note Deletion
 function deleteHandler() {
+  if (contentsLocked.value) return;
   isDeleteModalVisible.value = true;
 }
 
 function deleteConfirmedHandler() {
+  if (contentsLocked.value) return;
   const request = requestGeneration;
   const target = note.value.title;
   deleteNote(target)
@@ -258,6 +267,7 @@ function deleteConfirmedHandler() {
 
 // Note Saving
 function saveHandler(close = false) {
+  if (contentsLocked.value) return;
   // Save Default Editor Mode
   saveDefaultEditorMode();
 
@@ -539,6 +549,17 @@ function isContentChanged() {
 }
 
 watch(() => props.title, init);
+// Keep sidebar writes away from a live Contents editor, including its debounce.
+watch([() => props.title, editMode], () => {
+  globalStore.contentsEditing = props.title === 'Contents' && editMode.value;
+}, { immediate: true, flush: 'sync' });
+function contentsUpdated() {
+  if (active && props.title === 'Contents' && !editMode.value) {
+    note.value = {};
+    init();
+  }
+}
+window.addEventListener('flatnotes:contents-updated', contentsUpdated);
 function sessionEnded() {
   active = false;
   requestGeneration++;
@@ -564,11 +585,13 @@ onBeforeRouteLeave(mayNavigate);
 onBeforeRouteUpdate(mayNavigate);
 window.addEventListener('flatnotes:session-ended', sessionEnded);
 onBeforeUnmount(() => {
+  globalStore.contentsEditing = false;
   active = false;
   requestGeneration++;
   clearContentChangedTimeout();
   setBeforeUnloadConfirmation(false);
   window.removeEventListener('flatnotes:session-ended', sessionEnded);
+  window.removeEventListener('flatnotes:contents-updated', contentsUpdated);
   Mousetrap.unbind('e');
 });
 onMounted(init);

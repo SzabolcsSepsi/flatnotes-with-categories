@@ -3,6 +3,8 @@ import { ref } from "vue";
 
 export const useGlobalStore = defineStore("global", () => {
   const config = ref({});
+  const contentsEditing = ref(false);
+  const contentsWriting = ref(false);
 
-  return { config };
+  return { config, contentsEditing, contentsWriting };
 });

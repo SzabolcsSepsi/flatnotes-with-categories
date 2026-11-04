@@ -16,10 +16,12 @@ export function safeTitle(title) {
     !/%(?:2e|2f|5c|00|25)/i.test(title);
 }
 
-function dataLines(content) {
+function scannedLines(content) {
   let fence = null;
   const result = [];
-  for (const line of checkedText(content).split('\n')) {
+  const lines = checkedText(content).split('\n');
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
     const marker = /^ {0,3}(`{3,}|~{3,})/.exec(line);
     if (marker) {
       if (!fence) fence = marker[1];
@@ -27,9 +29,13 @@ function dataLines(content) {
                /^ {0,3}(?:`+|~+)\s*$/.test(line)) fence = null;
       continue;
     }
-    if (!fence) result.push(line);
+    if (!fence) result.push({ line, index });
   }
-  return result;
+  return { lines: result, length: lines.length, unclosedFence: Boolean(fence) };
+}
+
+function dataLines(content) {
+  return scannedLines(content).lines.map(entry => entry.line);
 }
 
 export function parseContents(content) {
@@ -37,7 +43,8 @@ export function parseContents(content) {
   const stack = [{ level: 0, children: root }];
   let count = 0;
   let ignored = 0;
-  for (const line of dataLines(content)) {
+  const scanned = scannedLines(content);
+  for (const { line, index } of scanned.lines) {
     const heading = /^ {0,3}(#{1,6})\s+(.+?)\s*$/.exec(line);
     const link = /^\s*[-*+]\s+\[\[([^\[\]]+)\]\]\s*$/.exec(line);
     if (!heading && !link) { if (line.trim()) ignored++; continue; }
@@ -48,16 +55,18 @@ export function parseContents(content) {
       continue;
     }
     if (++count > LIMITS.entries) throw new Error('Too many menu entries (maximum 2000).');
-    const node = { id: count, label, kind: heading ? 'category' : 'note' };
+    const node = { id: count, label, kind: heading ? 'category' : 'note', line: index };
     if (heading) {
       const level = heading[1].length;
-      while (stack.length > 1 && stack.at(-1).level >= level) stack.pop();
+      while (stack.length > 1 && stack.at(-1).level >= level) stack.pop().node.endLine = index;
+      node.level = level;
+      node.endLine = scanned.length;
       node.children = [];
       stack.at(-1).children.push(node);
-      stack.push({ level, children: node.children });
+      stack.push({ level, children: node.children, node });
     } else stack.at(-1).children.push(node);
   }
-  return { nodes: root, ignored };
+  return { nodes: root, ignored, unclosedFence: scanned.unclosedFence };
 }
 
 export function validDate(value) {
