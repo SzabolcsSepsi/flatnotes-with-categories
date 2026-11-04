@@ -51,6 +51,7 @@ try {
     await nav.getByText('Reference',{exact:true}).click();
     await nestedLink.click();
     await page.locator('.toast-viewer').getByText('Unicode note',{exact:true}).waitFor();
+    await openGuideCategory();
     await guideLink.click();
     await page.locator('.toast-viewer').getByText('Synthetic text', { exact:true }).waitFor();
     assert.equal(await guideLink.getAttribute('aria-current'), 'page');
@@ -105,11 +106,11 @@ try {
     await api('/api/notes',{title:'Home',content:'# Home\n- [ ] 2026-01-03 — Earlier'},'POST');
   });
   await check('sidebar navigation immediately protects unsaved edits', async () => {
-    await openGuideCategory();
     await page.getByRole('link',{name:'todo',exact:true}).click();
     await page.getByRole('button',{name:'Edit',exact:true}).click();
     const title = page.getByPlaceholder('Title',{exact:true});
     await title.fill('Unsaved synthetic title');
+    await openGuideCategory();
     page.once('dialog', dialog => dialog.dismiss());
     await guideLink.click();
     assert.ok(page.url().endsWith('/note/Home'));
